@@ -46,3 +46,21 @@ pub async fn exists(conn: impl PgExecutor<'_>, pubkey: &str) -> Result<Option<bo
 
     Ok(record.exists)
 }
+
+pub struct Username {
+    pub username: String,
+}
+
+pub async fn find(conn: impl PgExecutor<'_>, pubkey: &str) -> sqlx::Result<Option<Username>> {
+    let record = sqlx::query_as!(
+        Username,
+        r#"
+        SELECT username FROM users WHERE pubkey = $1
+        "#,
+        pubkey
+    )
+    .fetch_optional(conn)
+    .await?;
+
+    Ok(record)
+}

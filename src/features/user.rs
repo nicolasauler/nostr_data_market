@@ -1,7 +1,7 @@
 use sqlx::PgPool;
 use time::OffsetDateTime;
 
-pub async fn find(db: PgPool, pubkey: &str) -> sqlx::Result<bool> {
+pub async fn exists(db: PgPool, pubkey: &str) -> sqlx::Result<bool> {
     crate::queries::user::exists(&db, pubkey)
         .await
         .map(|r| r.unwrap_or(false))
@@ -16,4 +16,10 @@ pub async fn create(db_pool: PgPool, pubkey: &str, nickname: &str) -> sqlx::Resu
                 tracing::error!("i really need a macro that cancels the transaction");
             }
         })
+}
+
+pub async fn find(db_pool: PgPool, pubkey: &str) -> sqlx::Result<Option<String>> {
+    crate::queries::user::find(&db_pool, pubkey)
+        .await
+        .map(|r| r.map(|r| r.username))
 }
