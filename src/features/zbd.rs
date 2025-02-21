@@ -1,8 +1,11 @@
-use zebedee_rust::{ZebedeeClient, charges::Charge, errors::ZebedeeError};
+use anyhow::Context;
+use zebedee_rust::{
+    ZebedeeClient,
+    charges::{Charge, InvoiceData},
+};
 
-pub async fn create_charge(env: &crate::Env, sats_amount: u32) -> Result<(), ZebedeeError> {
-    let apikey = env.zbd_apikey.clone();
-    let zebedee_client = ZebedeeClient::new(apikey);
+pub async fn create_charge(zbd_apikey: String, sats_amount: u64) -> anyhow::Result<InvoiceData> {
+    let zebedee_client = ZebedeeClient::new(zbd_apikey);
 
     let charge = Charge {
         amount: sats_amount.to_string(),
@@ -10,7 +13,13 @@ pub async fn create_charge(env: &crate::Env, sats_amount: u32) -> Result<(), Zeb
     };
 
     let charges_res = zebedee_client.create_charge(&charge).await?;
-    println!("{:?}", charges_res);
+    tracing::info!(?charges_res, "zbd bolt11");
 
-    Ok(())
+    let invoice = charges_res
+        .data
+        .context("missing bolt11 data")?
+        .invoice
+        .context("missing invoice data")?;
+
+    Ok(invoice)
 }
