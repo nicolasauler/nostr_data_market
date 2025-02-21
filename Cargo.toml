@@ -1,0 +1,22 @@
+[package]
+name = "mercedado"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+anyhow = { version = "1.0.89", default-features = false }
+axum = { version = "0.8.1", features = ["http2", "tracing", "tokio", "json"], default-features = false }
+sqlx = { version = "0.8.3", default-features = false, features = ["runtime-tokio-rustls", "postgres", "time", "uuid", "migrate", "macros"] }
+time = { version = "0.3.36", default-features = false, features = ["serde", "serde-human-readable", "serde-well-known", "parsing"] }
+tokio = { version = "1.40.0", default-features = false, features = ["full"] }
+opentelemetry = { version = "0.27.0", default-features = false, features = ["logs"] }
+opentelemetry-appender-log = { version = "0.27.0", default-features = false }
+opentelemetry-appender-tracing = { version = "0.27.0", default-features = false }
+opentelemetry-otlp = { version = "0.27.0", default-features = false, features = ["zstd-tonic", "logs", "grpc-tonic"] }
+opentelemetry-semantic-conventions = { version = "0.27.0", default-features = false, features = ["semconv_experimental"] }
+opentelemetry_sdk = { version = "0.27.0", default-features = false, features = ["rt-tokio", "logs"] }
+tracing = { version = "0.1.40", default-features = false }
+tracing-subscriber = { version = "0.3.18", default-features = false, features = ["env-filter", "fmt", "ansi"] }
+serde = { version = "1.0.210", default-features = false, features = ["derive", "serde_derive"] }
+serde_json = { version = "1.0.128", default-features = false }
+zebedee-rust = {version = "0.8.0"}
