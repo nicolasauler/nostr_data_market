@@ -33,3 +33,16 @@ pub async fn list_pubkeys(conn: impl PgExecutor<'_>) -> sqlx::Result<Vec<Pubkey>
     .fetch_all(conn)
     .await
 }
+
+pub async fn exists(conn: impl PgExecutor<'_>, pubkey: &str) -> Result<Option<bool>, sqlx::Error> {
+    let record = sqlx::query!(
+        r#"
+        select exists(select 1 from users where pubkey = $1)
+        "#,
+        pubkey
+    )
+    .fetch_one(conn)
+    .await?;
+
+    Ok(record.exists)
+}
