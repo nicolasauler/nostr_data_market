@@ -19,3 +19,17 @@ pub async fn create(
     .execute(conn)
     .await
 }
+
+pub struct Pubkey {
+    pub pubkey: String,
+}
+
+pub async fn list_pubkeys(conn: impl PgExecutor<'_>) -> sqlx::Result<Vec<Pubkey>> {
+    sqlx::query_as!(
+        Pubkey,
+        r#"SELECT pubkey
+        FROM users"#,
+    )
+    .fetch_all(conn)
+    .await
+}

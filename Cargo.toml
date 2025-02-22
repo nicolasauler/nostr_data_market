@@ -20,3 +20,6 @@ tracing-subscriber = { version = "0.3.18", default-features = false, features = 
 serde = { version = "1.0.210", default-features = false, features = ["derive", "serde_derive"] }
 serde_json = { version = "1.0.128", default-features = false }
 zebedee-rust = {version = "0.8.0"}
+nostr = { version = "0.39.0", default-features = true }
+nostr-sdk = { version = "0.39.0", default-features = true }
+nostr-relay-pool = { version = "0.39.0", default-features = true}
