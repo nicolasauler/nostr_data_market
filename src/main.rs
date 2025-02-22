@@ -87,7 +87,7 @@ fn rest(app_state: Arc<AppState>) -> tokio::task::JoinHandle<anyhow::Result<()>>
     tracing::info!("Server started");
 
     tokio::spawn(async move {
-        let listener = tokio::net::TcpListener::bind("127.0.0.1:8000")
+        let listener = tokio::net::TcpListener::bind("localhost:8000")
             .await
             .context("could not start listener")?;
         let server = axum::serve(

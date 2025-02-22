@@ -3,18 +3,18 @@ use time::OffsetDateTime;
 
 pub async fn create(
     conn: impl PgExecutor<'_>,
-    username: &str,
     pubkey: &str,
+    username: &str,
     created_at: OffsetDateTime,
 ) -> sqlx::Result<sqlx::postgres::PgQueryResult> {
     sqlx::query!(
         r#"
-        INSERT INTO users (username, created_at, pubkey)
+        INSERT INTO users (pubkey, username, created_at)
         VALUES ($1, $2, $3)
         "#,
+        pubkey,
         username,
         created_at,
-        pubkey,
     )
     .execute(conn)
     .await
@@ -32,4 +32,35 @@ pub async fn list_pubkeys(conn: impl PgExecutor<'_>) -> sqlx::Result<Vec<Pubkey>
     )
     .fetch_all(conn)
     .await
+}
+
+pub async fn exists(conn: impl PgExecutor<'_>, pubkey: &str) -> Result<Option<bool>, sqlx::Error> {
+    let record = sqlx::query!(
+        r#"
+        select exists(select 1 from users where pubkey = $1)
+        "#,
+        pubkey
+    )
+    .fetch_one(conn)
+    .await?;
+
+    Ok(record.exists)
+}
+
+pub struct Username {
+    pub username: String,
+}
+
+pub async fn find(conn: impl PgExecutor<'_>, pubkey: &str) -> sqlx::Result<Option<Username>> {
+    let record = sqlx::query_as!(
+        Username,
+        r#"
+        SELECT username FROM users WHERE pubkey = $1
+        "#,
+        pubkey
+    )
+    .fetch_optional(conn)
+    .await?;
+
+    Ok(record)
 }
