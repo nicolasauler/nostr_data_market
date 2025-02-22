@@ -108,7 +108,7 @@ fn init_otlp(
     name: &'static str,
     version: &'static str,
     instance_id: &str,
-) -> Result<opentelemetry_sdk::logs::LoggerProvider, opentelemetry_sdk::logs::LogError> {
+) -> Result<opentelemetry_sdk::logs::SdkLoggerProvider, opentelemetry_sdk::logs::LogError> {
     let logger_provider = init_logs(otel_endpoint, name, version, instance_id)?;
 
     let otel_logger =
@@ -128,11 +128,9 @@ fn init_logs(
     name: &'static str,
     version: &'static str,
     instance_id: &str,
-) -> Result<opentelemetry_sdk::logs::LoggerProvider, opentelemetry_sdk::logs::LogError> {
+) -> Result<opentelemetry_sdk::logs::SdkLoggerProvider, opentelemetry_sdk::logs::LogError> {
     use opentelemetry_otlp::{WithExportConfig, WithTonicConfig};
-    use opentelemetry_semantic_conventions::resource::{
-        SERVICE_INSTANCE_ID, SERVICE_NAME, SERVICE_VERSION,
-    };
+    use opentelemetry_semantic_conventions::resource::{SERVICE_INSTANCE_ID, SERVICE_VERSION};
 
     let exporter = opentelemetry_otlp::LogExporter::builder()
         .with_tonic()
@@ -140,12 +138,18 @@ fn init_logs(
         .with_compression(opentelemetry_otlp::Compression::Zstd)
         .build()?;
 
-    Ok(opentelemetry_sdk::logs::LoggerProvider::builder()
-        .with_resource(opentelemetry_sdk::Resource::new([
-            opentelemetry::KeyValue::new(SERVICE_NAME, name),
-            opentelemetry::KeyValue::new(SERVICE_VERSION, version),
-            opentelemetry::KeyValue::new(SERVICE_INSTANCE_ID, instance_id.to_owned()),
-        ]))
-        .with_batch_exporter(exporter, opentelemetry_sdk::runtime::Tokio)
+    Ok(opentelemetry_sdk::logs::SdkLoggerProvider::builder()
+        .with_resource(
+            opentelemetry_sdk::Resource::builder()
+                .with_service_name(name)
+                .with_attribute(opentelemetry::KeyValue::new(SERVICE_VERSION, version))
+                .with_attribute(opentelemetry::KeyValue::new(
+                    SERVICE_INSTANCE_ID,
+                    instance_id.to_owned(),
+                ))
+                .build(),
+        )
+        //.with_batch_exporter(exporter, opentelemetry_sdk::runtime::Tokio)
+        .with_batch_exporter(exporter)
         .build())
 }

@@ -83,7 +83,7 @@ pub async fn listen_for_job_requests(zbd_apikey: String, db_pool: PgPool) -> any
         .map(|p| nostr::PublicKey::from_bech32(p.pubkey.as_str()))
         .collect::<Result<_, _>>()?;
     let filter = nostr::Filter::new()
-        .pubkeys(pubkeys)
+        //.pubkeys(pubkeys)
         .kind(nostr::Kind::from_u16(5000));
     //.since(nostr::Timestamp::now());
     let opts = SubscribeAutoCloseOptions::default().exit_policy(ReqExitPolicy::ExitOnEOSE);
