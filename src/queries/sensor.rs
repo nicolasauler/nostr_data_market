@@ -20,3 +20,20 @@ pub async fn create(
     .execute(conn)
     .await
 }
+
+pub struct Sensor {
+    pub external_id: String,
+    pub description: String,
+}
+
+pub async fn list(conn: impl PgExecutor<'_>) -> sqlx::Result<Vec<Sensor>> {
+    sqlx::query_as!(
+        Sensor,
+        r#"
+        SELECT external_id, description
+        FROM user_sensors
+        "#,
+    )
+    .fetch_all(conn)
+    .await
+}

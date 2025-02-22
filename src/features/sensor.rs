@@ -1,3 +1,4 @@
+use crate::queries::sensor::Sensor;
 use sqlx::PgPool;
 
 pub async fn create(
@@ -19,4 +20,8 @@ pub async fn create(
             tracing::error!("i really need a macro that cancels the transaction");
         }
     })
+}
+
+pub async fn list(db: PgPool) -> sqlx::Result<Vec<Sensor>> {
+    crate::queries::sensor::list(&db).await
 }

@@ -14,6 +14,7 @@ pub fn router() -> Router<Arc<AppState>> {
         .route("/api/login", post(login))
         .route("/api/register", post(register))
         .route("/api/register-sensor", post(register_sensor))
+        .route("/api/list-sensors", get(list_sensors))
 }
 
 #[derive(Deserialize)]
@@ -105,6 +106,40 @@ async fn register_sensor(
         Err(e) => {
             tracing::error!(?e, "error creating sensor");
             StatusCode::INTERNAL_SERVER_ERROR
+        }
+    }
+}
+
+#[derive(serde::Serialize)]
+pub struct Sensors {
+    pub sensors: Vec<Sensor>,
+}
+
+#[derive(serde::Serialize)]
+pub struct Sensor {
+    pub id: String,
+    pub description: String,
+}
+
+async fn list_sensors(
+    State(shared_state): State<Arc<AppState>>,
+) -> Result<Json<Sensors>, StatusCode> {
+    println!("list_sensors");
+    match crate::features::sensor::list(shared_state.pool.clone()).await {
+        Ok(sensors) => {
+            let sensors = sensors
+                .into_iter()
+                .map(|s| Sensor {
+                    id: s.external_id,
+                    description: s.description,
+                })
+                .collect();
+
+            Ok(Json(Sensors { sensors }))
+        }
+        Err(e) => {
+            tracing::error!(?e, "error listing sensors");
+            Err(StatusCode::INTERNAL_SERVER_ERROR)
         }
     }
 }
