@@ -1,12 +1,46 @@
-use crate::AppState;
-use axum::{Router, extract::State, http::StatusCode, routing::get};
+use crate::{AppState, features::sensor::DataBuy};
+use axum::{
+    Json, Router,
+    extract::{Query, State},
+    http::StatusCode,
+    routing::get,
+};
+use serde::Deserialize;
 use std::sync::Arc;
+use time::OffsetDateTime;
 
 pub fn router() -> Router<Arc<AppState>> {
     Router::new()
         .route("/api/simulate", get(simulate))
         .route("/api/send-job", get(send_job))
         .route("/api/process-job", get(process_jobs))
+        .route("/api/buy", get(buy_data))
+}
+
+#[derive(Deserialize)]
+struct BuyData {
+    from: OffsetDateTime,
+    to: OffsetDateTime,
+    sensor_external_id: String,
+}
+
+async fn buy_data(
+    State(shared_state): State<Arc<AppState>>,
+    Query(data_input): Query<BuyData>,
+) -> Result<Json<DataBuy>, StatusCode> {
+    match crate::features::sensor::get_all_data(
+        shared_state.pool.clone(),
+        shared_state.env.zbd_apikey.clone(),
+        &data_input.sensor_external_id,
+    )
+    .await
+    {
+        Ok(data) => Ok(Json(data)),
+        Err(e) => {
+            tracing::error!(?e, "error sending job");
+            Err(StatusCode::INTERNAL_SERVER_ERROR)
+        }
+    }
 }
 
 async fn send_job() -> StatusCode {

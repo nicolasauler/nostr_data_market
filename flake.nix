@@ -35,7 +35,6 @@
 
         systems = [
           "x86_64-linux"
-          "aarch64-darwin"
         ];
 
         perSystem = {
@@ -133,7 +132,15 @@
             RUSTFLAGS = "-Zthreads=8";
 
             packages = with pkgs; [
+              bacon
+              cachix
+              cargo-expand
+              cargo-llvm-cov
+              cargo-nextest
+              jq
               postgresql
+              python3
+              svix-cli
               sqlx-cli
             ];
           };
