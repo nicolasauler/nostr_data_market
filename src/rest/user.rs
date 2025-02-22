@@ -13,6 +13,7 @@ pub fn router() -> Router<Arc<AppState>> {
         .route("/api/get/user/{pubkey}", get(load_user))
         .route("/api/login", post(login))
         .route("/api/register", post(register))
+        .route("/api/register-sensor", post(register_sensor))
 }
 
 #[derive(Deserialize)]
@@ -71,14 +72,39 @@ async fn load_user(
     State(shared_state): State<Arc<AppState>>,
     Path(pubkey): Path<String>,
 ) -> Result<Json<UserResponse>, StatusCode> {
-    println!("pubkey: {}", pubkey);
-
     match crate::features::user::find(shared_state.pool.clone(), &pubkey).await {
         Ok(Some(nickname)) => Ok(Json(UserResponse { nickname })),
         Ok(None) => Err(StatusCode::NOT_FOUND),
         Err(e) => {
             tracing::error!(pubkey, ?e, "error fetching user");
             Err(StatusCode::NOT_FOUND)
+        }
+    }
+}
+
+#[derive(serde::Deserialize)]
+pub struct RegisterSensorInput {
+    pub pubkey: String,
+    pub id: String,
+    pub description: String,
+}
+
+async fn register_sensor(
+    State(shared_state): State<Arc<AppState>>,
+    Json(input): Json<RegisterSensorInput>,
+) -> StatusCode {
+    match crate::features::sensor::create(
+        shared_state.pool.clone(),
+        &input.pubkey,
+        &input.id,
+        &input.description,
+    )
+    .await
+    {
+        Ok(()) => StatusCode::OK,
+        Err(e) => {
+            tracing::error!(?e, "error creating sensor");
+            StatusCode::INTERNAL_SERVER_ERROR
         }
     }
 }
