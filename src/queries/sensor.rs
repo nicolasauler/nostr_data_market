@@ -24,13 +24,14 @@ pub async fn create(
 pub struct Sensor {
     pub external_id: String,
     pub description: String,
+    pub user_pubkey: String,
 }
 
 pub async fn list(conn: impl PgExecutor<'_>) -> sqlx::Result<Vec<Sensor>> {
     sqlx::query_as!(
         Sensor,
         r#"
-        SELECT external_id, description
+        SELECT external_id, description, user_pubkey
         FROM user_sensors
         "#,
     )

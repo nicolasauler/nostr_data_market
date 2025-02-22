@@ -118,6 +118,7 @@ pub struct Sensors {
 #[derive(serde::Serialize)]
 pub struct Sensor {
     pub id: String,
+    pub owner_pubkey: String,
     pub description: String,
 }
 
@@ -131,6 +132,7 @@ async fn list_sensors(
                 .into_iter()
                 .map(|s| Sensor {
                     id: s.external_id,
+                    owner_pubkey: s.user_pubkey,
                     description: s.description,
                 })
                 .collect();
